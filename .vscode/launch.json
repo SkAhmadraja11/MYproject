@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MusicSpringbootApplication<MUSIC-SPRINGBOOT>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.musicstreamingapp.MusicSpringbootApplication",
+            "projectName": "MUSIC-SPRINGBOOT",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
