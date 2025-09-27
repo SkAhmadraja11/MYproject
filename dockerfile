@@ -1,16 +1,20 @@
-# -------- Stage 1: Build with Vite --------
-FROM node:18-alpine AS builder
+# ---------- Build stage ----------
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
 
-# -------- Stage 2: Serve with Nginx --------
-FROM nginx:alpine 
-# Remove default Nginx content
-RUN rm -rf /usr/share/nginx/html/*
-# Copy build output to Nginx public directory
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+COPY pom.xml .
+# Cache deps to speed up rebuilds
+RUN --mount=type=cache,target=/root/.m2 mvn -B -DskipTests dependency:go-offline
+
+COPY src ./src
+RUN --mount=type=cache,target=/root/.m2 mvn -B -DskipTests clean install package
+
+# ---------- Run stage ----------
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+ENV JAVA_OPTS=""
+EXPOSE 2057
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]
